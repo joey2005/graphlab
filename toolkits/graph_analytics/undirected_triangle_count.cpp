@@ -605,11 +605,14 @@ int main(int argc, char** argv) {
     "will over count.");
   std::string prefix, format;
   std::string per_vertex;
+  size_t powerlaw = 0;
   clopts.attach_option("graph", prefix,
                        "Graph input. reads all graphs matching prefix*");
   clopts.attach_option("format", format,
                        "The graph format");
- clopts.attach_option("ht", HASH_THRESHOLD,
+  clopts.attach_option("powerlaw", powerlaw,
+                               "Generate a synthetic powerlaw out-degree graph. ");
+  clopts.attach_option("ht", HASH_THRESHOLD,
                        "Above this size, hash sets are used");
   clopts.attach_option("per_vertex", per_vertex,
                        "If not empty, will count the number of "
@@ -618,17 +621,6 @@ int main(int argc, char** argv) {
                        "The algorithm used is slightly different "
                        "and thus will be a little slower");
   if(!clopts.parse(argc, argv)) return EXIT_FAILURE;
-  if (prefix == "") {
-    std::cout << "--graph is not optional\n";
-    clopts.print_description();
-    return EXIT_FAILURE;
-  }
-  else if (format == "") {
-    std::cout << "--format is not optional\n";
-    clopts.print_description();
-    return EXIT_FAILURE;
-  }
-
 
   if (per_vertex != "") PER_VERTEX_COUNT = true;
   // Initialize control plane using mpi
@@ -638,7 +630,23 @@ int main(int argc, char** argv) {
   graphlab::launch_metric_server();
   // load graph
   graph_type graph(dc, clopts);
-  graph.load_format(prefix, format);
+  if (powerlaw > 0) { // make a synthetic graph
+    dc.cout() << "Loading synthetic Powerlaw graph." << std::endl;
+    graph.load_synthetic_powerlaw(powerlaw, false, 2.0, 100000000);
+  } else {
+    if (prefix == "") {
+      std::cout << "--graph is not optional\n";
+      clopts.print_description();
+      return EXIT_FAILURE;
+    }
+    else if (format == "") {
+      std::cout << "--format is not optional\n";
+      clopts.print_description();
+      return EXIT_FAILURE;
+    }
+    graph.load_format(prefix, format);
+  }
+
   graph.finalize();
   dc.cout() << "Number of vertices: " << graph.num_vertices() << std::endl
             << "Number of edges:    " << graph.num_edges() << std::endl;

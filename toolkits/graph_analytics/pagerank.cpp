@@ -224,9 +224,9 @@ int main(int argc, char** argv) {
 
   // Build the graph ----------------------------------------------------------
   graph_type graph(dc, clopts);
-  if(powerlaw > 0) { // make a synthetic graph
+  if (powerlaw > 0) { // make a synthetic graph
     dc.cout() << "Loading synthetic Powerlaw graph." << std::endl;
-    graph.load_synthetic_powerlaw(powerlaw, false, 2.1, 100000000);
+    graph.load_synthetic_powerlaw(powerlaw, false, 2.0, 100000000);
   }
   else if (graph_dir.length() > 0) { // Load the graph from a file
     dc.cout() << "Loading graph in format: "<< format << std::endl;
