@@ -148,7 +148,8 @@ install(CODE "execute_process(COMMAND ./scripts/install_deps.sh
 # https://bitbucket.org/eigen/eigen/
 ExternalProject_Add(eigen
   PREFIX ${GraphLab_SOURCE_DIR}/deps/eigen
-  URL https://s3-us-west-2.amazonaws.com/static.graphlab.com/PowerGraph/deps/eigen_3.1.2.tar.bz2
+#URL https://s3-us-west-2.amazonaws.com/static.graphlab.com/PowerGraph/deps/eigen_3.1.2.tar.bz2
+  URL http://s3-us-west-2.amazonaws.com/static.graphlab.com/PowerGraph/deps/eigen_3.1.2.tar.bz2
   URL_MD5 e9c081360dde5e7dcb8eba3c8430fde2
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
