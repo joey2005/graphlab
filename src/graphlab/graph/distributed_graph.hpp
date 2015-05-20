@@ -955,6 +955,36 @@ namespace graphlab {
     *             complete_set()
     */
     template <typename ReductionType, typename MapFunctionType>
+    struct param_map_reduce_vertex {
+        int start, end;
+        ReductionType result;
+        MapFunctionType mapfunction;
+        vertex_set& vset;
+    };
+
+    template <typename ReductionType, typename MapFunctionType>
+    void* do_map_reduce_vertex(void *arg) {
+        param_map_reduce_vertex<ReductionType, MapFunctionType> *p = (param_map_reduce_vertex<ReductionType, MapFunctionType> *) arg;
+        bool result_set = false;
+        for (int i = p->start; i < p->end; ++i) {
+          if (lvid2record[i].owner == rpc.procid() &&
+              p->vset.l_contains((lvid_type)i)) {
+            if (!result_set) {
+              const vertex_type vtx(l_vertex(i));
+              p->result = p->mapfunction(vtx);
+              result_set = true;
+            }
+            else if (result_set){
+              const vertex_type vtx(l_vertex(i));
+              const ReductionType tmp = p->mapfunction(vtx);
+              p->result += tmp;
+            }
+          }
+        }
+        pthread_exit(NULL);
+    }
+ 
+    template <typename ReductionType, typename MapFunctionType>
     ReductionType map_reduce_vertices(MapFunctionType mapfunction,
                                       const vertex_set& vset = complete_set()) {
       BOOST_CONCEPT_ASSERT((graphlab::Serializable<ReductionType>));
@@ -975,28 +1005,38 @@ namespace graphlab {
       {
         bool result_set = false;
         ReductionType result = ReductionType();
-#ifdef _OPENMP
-        #pragma omp for
-#endif
-        for (int i = 0; i < (int)local_graph.num_vertices(); ++i) {
-          if (lvid2record[i].owner == rpc.procid() &&
-              vset.l_contains((lvid_type)i)) {
-            if (!result_set) {
-              const vertex_type vtx(l_vertex(i));
-              result = mapfunction(vtx);
-              result_set = true;
-            }
-            else if (result_set){
-              const vertex_type vtx(l_vertex(i));
-              const ReductionType tmp = mapfunction(vtx);
-              result += tmp;
-            }
-          }
-        }
+//#ifdef _OPENMP
+//        #pragma omp for
+//#endif
 #ifdef _OPENMP
         #pragma omp critical
 #endif
         {
+          const int threadCount = omp_get_num_procs();
+          pthread_t *threads = (pthread_t *) malloc(threadCount * sizeof(*threads));
+          param_map_reduce_vertex<ReductionType, MapFunctionType> *p = (param_map_reduce_vertex<ReductionType, MapFunctionType> *)malloc(threadCount * sizeof(param_map_reduce_vertex<ReductionType, MapFunctionType>));
+          int total = (int)local_graph.num_vertices();
+          for (int i = 0; i < threadCount; ++i) {
+              p[i].start = total / threadCount * i;
+              p[i].end = i == threadCount - 1 ? total : total / threadCount * (i + 1);
+              p[i].mapfunction = mapfunction;
+              p[i].result = ReductionType();
+              p[i].vset = vset;
+              pthread_create(&threads[i], NULL, do_map_reduce_vertex<ReductionType, MapFunctionType>, (void *)(p+i));
+          }
+          for (int i = 0; i < threadCount; ++i) {
+              pthread_join(threads[i], NULL);
+          }
+
+          for (int i = 0; i < threadCount; ++i) {
+              if (!result_set) {
+                  result = p[i].result;
+                  result_set = true;
+              } else {
+                  result += p[i].result;
+              }
+          }
+        
           if (result_set) {
             if (!global_result_set) {
               global_result = result;
@@ -1006,6 +1046,9 @@ namespace graphlab {
               global_result += result;
             }
           }
+
+          free(p);
+          free(threads);
         }
       }
       conditional_addition_wrapper<ReductionType>
