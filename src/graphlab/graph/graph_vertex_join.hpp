@@ -362,6 +362,27 @@ class graph_vertex_join {
       }
     }
 
+    struct param_injective_join {
+      int l, r;
+      injective_join_index *inj_index;
+      std::vector<std::vector<std::pair<size_t, procid_t> > > *match;
+    };
+
+    void *Task_compute_injective_join(void* _params) {
+      param_injective_join* params = (param_injective_join)_params;
+
+      for (size_t p = params->l; p < params->r; ++p) {
+        for (size_t i = 0; i < match[p].size(); ++i) {
+          // search for the key in the left index
+          hopscotch_map<size_t, vertex_id_type>::const_iterator iter = 
+              inj_index->key_to_vtx.find(match[p][i]->first);
+          ASSERT_TRUE(iter != inj_index->key_to_vtx.end());
+          // fill in the match
+          inj_index->opposing_join_proc[iter->second] = match[p][i]->second;
+        }
+      }
+    }
+
     void compute_injective_join() {
       std::vector<std::vector<size_t> > left_keys = 
           get_procs_with_keys(left_inj_index.vtx_to_key, left_graph);
@@ -421,6 +442,7 @@ class graph_vertex_join {
       // fill in the index
       // go through the left match and set up the opposing index to based
       // on the match result
+
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
@@ -450,6 +472,38 @@ class graph_vertex_join {
         }
       }
       right_match.clear();
+
+      /*
+      const int NUM_THREADS = omp_get_max_threads();
+      pthread_t threads[NUM_THREADS];
+      param_injective_join params[NUM_THREADS];
+      int block_size = (int)left_match.size() / NUM_THREADS;
+      for (int t = 0; t < NUM_THREADS; ++t) {
+        params[t].inj_index = &left_inj_index;
+        params[t].match = &left_match;
+        params[t].l = block_size * t;
+        params[t].r = (t + 1 == NUM_THREADS) ? (int)left_match.size() : block_size * (t + 1);
+        pthread_create(&threads[t], NULL, Task_compute_injective_join, (void *)&params[t]);
+      }
+      for (int t = 0; t < NUM_THREADS; ++t) {
+        pthread_join(threads[t], NULL);
+      }
+      left_match.clear();
+
+      block_size = (int)right_match.size() / NUM_THREADS;
+      for (int t = 0; t < NUM_THREADS; ++t) {
+        params[t].inj_index = &right_inj_index;
+        params[t].match = &right_match;
+        params[t].l = block_size * t;
+        params[t].r = (t + 1 == NUM_THREADS) ? (int)right_match.size() : block_size * (t + 1);
+        pthread_create(&threads[t], NULL, Task_compute_injective_join, (void *)&params[t]);
+      }
+      for (int t = 0; t < NUM_THREADS; ++t) {
+        pthread_join(threads[t], NULL);
+      }
+      right_match.clear();
+      */
+
       // ok done.
     }
 

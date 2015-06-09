@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
   // 
   for (size_t i = 0;i < ndata; ++i) {
     size_t c = graphlab::random::fast_uniform<size_t>(0, centers.size() - 1);
+    fout << i << "\t";
     for (size_t j = 0; j < dim; ++j) {
       double d = graphlab::random::gaussian() + centers[c][j];
       fout << d << "\t";
