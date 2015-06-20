@@ -473,7 +473,7 @@ class graph_vertex_join {
       }
       right_match.clear();
 
-      /*
+#ifdef _PTHREAD_TEST
       const int NUM_THREADS = omp_get_max_threads();
       pthread_t threads[NUM_THREADS];
       param_injective_join params[NUM_THREADS];
@@ -502,7 +502,7 @@ class graph_vertex_join {
         pthread_join(threads[t], NULL);
       }
       right_match.clear();
-      */
+#endif
 
       // ok done.
     }

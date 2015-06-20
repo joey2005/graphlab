@@ -903,7 +903,6 @@ int main(int argc, char** argv) {
   while(clusters_changed) {
 		if(MAX_ITERATION > 0 && iteration_count >= MAX_ITERATION)
 			break;
-    double time_begin = MPI_Wtime();
 
     cluster_center_reducer cc = graph.map_reduce_vertices<cluster_center_reducer>
                                     (cluster_center_reducer::get_center);
@@ -953,8 +952,6 @@ int main(int argc, char** argv) {
     }else{
       graph.transform_vertices(kmeans_iteration);
     }
-    double time_end = MPI_Wtime();
-    fprintf(stderr, "%d %.10f\n", my_rank, time_end - time_begin);
 
     ++iteration_count;
   }

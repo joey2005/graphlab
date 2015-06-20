@@ -1367,24 +1367,15 @@ namespace graphlab {
         break;
       }
 
-      int my_rank = (int)graphlab::mpi_tools::rank();
-      double timeBegin, timeEnd;
-
       // Execute gather operations-------------------------------------------
       // Execute the gather operation for all vertices that are active
       // in this minor-step (active-minorstep bit set).
       // if (rmi.procid() == 0) std::cout << "Gathering..." << std::endl;
-      timeBegin = MPI_Wtime();
       run_synchronous( &synchronous_engine::execute_gathers );
-      timeEnd = MPI_Wtime();
-      fprintf(stderr, "[Gather] %d: %.10f\n", my_rank, timeEnd - timeBegin);
       // Clear the minor step bit since only super-step vertices
       // (only master vertices are required to participate in the
       // apply step)
-      timeBegin = MPI_Wtime();
       active_minorstep.clear(); // rmi.barrier();
-      timeEnd = MPI_Wtime();
-      fprintf(stderr, "[active_minorstep.clear()] %d: %.10f\n", my_rank, timeEnd - timeBegin);
       /**
        * Post conditions:
        *   1) gather_accum for all master vertices contains the
@@ -1396,10 +1387,7 @@ namespace graphlab {
       // Execute Apply Operations -------------------------------------------
       // Run the apply function on all active vertices
       // if (rmi.procid() == 0) std::cout << "Applying..." << std::endl;
-      timeBegin = MPI_Wtime();
       run_synchronous( &synchronous_engine::execute_applys );
-      timeEnd = MPI_Wtime();
-      fprintf(stderr, "[Apply] %d: %.10f\n", my_rank, timeEnd - timeBegin);
       /**
        * Post conditions:
        *   1) any changes to the vertex data have been synchronized
@@ -1414,10 +1402,7 @@ namespace graphlab {
 
       // Execute Scatter Operations -----------------------------------------
       // Execute each of the scatters on all minor-step active vertices.
-      timeBegin = MPI_Wtime();
       run_synchronous( &synchronous_engine::execute_scatters );
-      timeEnd = MPI_Wtime();
-      fprintf(stderr, "[Scatter] %d: %.10f\n", my_rank, timeEnd - timeBegin);
       /**
        * Post conditions:
        *   1) NONE

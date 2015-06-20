@@ -966,10 +966,7 @@ namespace graphlab {
           << std::endl;
       }
 
-      double timeBegin = MPI_Wtime();
       rpc.barrier();
-      double timeEnd = MPI_Wtime();
-      fprintf(stderr, "[map_reduce_vertices] %d: %.10f\n", (int)graphlab::mpi_tools::rank(), timeEnd - timeBegin);
       bool global_result_set = false;
       ReductionType global_result = ReductionType();
 #ifdef _OPENMP
@@ -1097,11 +1094,7 @@ namespace graphlab {
           << std::endl;
       }
 
-      double timeBegin = MPI_Wtime();
       rpc.barrier();
-      double timeEnd = MPI_Wtime();
-      fprintf(stderr, "[map_reduce_edges] %d: %.10f\n", (int)graphlab::mpi_tools::rank(), timeEnd - timeBegin);
-      //rpc.barrier();
       bool global_result_set = false;
       ReductionType global_result = ReductionType();
 #ifdef _OPENMP
@@ -1249,11 +1242,7 @@ namespace graphlab {
           << std::endl;
       }
 
-      double timeBegin = MPI_Wtime();
       rpc.barrier();
-      double timeEnd = MPI_Wtime();
-      fprintf(stderr, "[fold_vertices] %d: %.10f\n", (int)graphlab::mpi_tools::rank(), timeEnd - timeBegin);
-      //rpc.barrier();
       bool global_result_set = false;
       ReductionType global_result = ReductionType();
 #ifdef _OPENMP
@@ -1372,11 +1361,7 @@ namespace graphlab {
           << std::endl;
       }
 
-      double timeBegin = MPI_Wtime();
       rpc.barrier();
-      double timeEnd = MPI_Wtime();
-      fprintf(stderr, "[fold_edges] %d: %.10f\n", (int)graphlab::mpi_tools::rank(), timeEnd - timeBegin);
-      //rpc.barrier();
       bool global_result_set = false;
       ReductionType global_result = ReductionType();
 #ifdef _OPENMP
@@ -1486,11 +1471,7 @@ namespace graphlab {
           << std::endl;
       }
 
-      double timeBegin = MPI_Wtime();
       rpc.barrier();
-      double timeEnd = MPI_Wtime();
-      fprintf(stderr, "[transform_vertices] %d: %.10f\n", (int)graphlab::mpi_tools::rank(), timeEnd - timeBegin);
-      //rpc.barrier();
 #ifdef _OPENMP
       #pragma omp parallel for
 #endif
@@ -1572,11 +1553,7 @@ namespace graphlab {
           << "\n\tbefore finalizing the graph."
           << std::endl;
       }
-      double timeBegin = MPI_Wtime();
       rpc.barrier();
-      double timeEnd = MPI_Wtime();
-      fprintf(stderr, "[transform_edges] %d: %.10f\n", (int)graphlab::mpi_tools::rank(), timeEnd - timeBegin);
-      //rpc.barrier();
 #ifdef _OPENMP
       #pragma omp parallel for
 #endif
@@ -1615,11 +1592,7 @@ namespace graphlab {
     template <typename VertexFunctorType>
     void parallel_for_vertices(std::vector<VertexFunctorType>& accfunction) {
       ASSERT_TRUE(finalized);
-      double timeBegin = MPI_Wtime();
       rpc.barrier();
-      double timeEnd = MPI_Wtime();
-      fprintf(stderr, "[parallel_for_vertices] %d: %.10f\n", (int)graphlab::mpi_tools::rank(), timeEnd - timeBegin);
-      //rpc.barrier();
       int numaccfunctions = (int)accfunction.size();
       ASSERT_GE(numaccfunctions, 1);
 #ifdef _OPENMP
@@ -1649,11 +1622,7 @@ namespace graphlab {
     template <typename EdgeFunctorType>
     void parallel_for_edges(std::vector<EdgeFunctorType>& accfunction) {
       ASSERT_TRUE(finalized);
-      double timeBegin = MPI_Wtime();
       rpc.barrier();
-      double timeEnd = MPI_Wtime();
-      fprintf(stderr, "[parallel_for_vertices] %d: %.10f\n", (int)graphlab::mpi_tools::rank(), timeEnd - timeBegin);
-      //rpc.barrier();
       int numaccfunctions = (int)accfunction.size();
       ASSERT_GE(numaccfunctions, 1);
 #ifdef _OPENMP
