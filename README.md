@@ -1,1 +1,3 @@
-Experiment changes to use in CS332
+# README #
+
+modifications made to use in CS/Data Intensive Computing course project
